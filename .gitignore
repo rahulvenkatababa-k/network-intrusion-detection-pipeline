@@ -1,0 +1,11 @@
+.venv/
+venv/
+env/
+.env
+__pycache__/
+*.pyc
+artifacts/
+logs/
+.mypy_cache/
+.ipynb_checkpoints/
+.vscode/
