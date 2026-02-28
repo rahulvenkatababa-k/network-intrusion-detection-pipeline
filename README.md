@@ -27,3 +27,8 @@ sudo sh get-docker.sh
 sudo usermod -aG docker ubuntu
 
 newgrp docker
+
+
+1. Configure Setup.py
+2. Configure Logging.py
+3. Configure exception.py

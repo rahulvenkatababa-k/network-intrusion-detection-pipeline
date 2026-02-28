@@ -9,3 +9,4 @@ logs/
 .mypy_cache/
 .ipynb_checkpoints/
 .vscode/
+logs/
