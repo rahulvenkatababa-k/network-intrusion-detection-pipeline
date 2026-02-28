@@ -32,3 +32,7 @@ newgrp docker
 1. Configure Setup.py
 2. Configure Logging.py
 3. Configure exception.py
+4. tst_mongo_db.py
+5. push_data.py
+6. __init__.py in constant\training_pipeline
+6. config_entity.py
