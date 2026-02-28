@@ -34,5 +34,10 @@ newgrp docker
 3. Configure exception.py
 4. tst_mongo_db.py
 5. push_data.py
-6. __init__.py in constant\training_pipeline
-6. config_entity.py
+6. update schema.yaml
+# follow stage by stage updaate data ingestion, data validation, model training, model evaluation steps 7->to->11 and update utils folder according to the requirement
+7. __init__.py in constant\training_pipeline
+8. config_entity.py 
+9. configure artifact_entity.py file
+10. create file with the satege in components folder
+11. main.py
