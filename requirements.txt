@@ -15,4 +15,5 @@ setuptools
 ipykernel
 dill
 pyaml
+mypy
 #-e .
