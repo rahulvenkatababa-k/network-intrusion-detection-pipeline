@@ -1,5 +1,8 @@
 import os
 import sys
+import mlflow
+import dagshub
+dagshub.init(repo_owner='rahulvenkatababa-k', repo_name='NetworkSecurity', mlflow=True)
 
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
@@ -32,6 +35,19 @@ class ModelTrainer:
             self.data_transformation_artifact = data_transformation_artifact
         except Exception as e:
             raise NetworkSecurityException(e,sys)
+
+    def track_mlflow(self, best_model, classificationmetric):
+        with mlflow.start_run():
+            f1_score = classificationmetric.f1_score
+            precision_score = classificationmetric.precision_score
+            recall_score = classificationmetric.recall_score
+
+            mlflow.log_metric("f1_score",f1_score)
+            mlflow.log_metric("precision_score",precision_score)
+            mlflow.log_metric("recall_score",recall_score)
+
+            mlflow.sklearn.log_model(best_model,name="model")
+
     
     def train_model(self,x_train,y_train,x_test,y_test):
         models = {
@@ -85,9 +101,12 @@ class ModelTrainer:
 
 
         ## track the mlflow
+        self.track_mlflow(best_model,classification_train_metric)
 
         y_test_pred = best_model.predict(x_test)        
         classification_test_metric = get_classification_score(y_pred=y_test_pred,y_true=y_test)
+
+        self.track_mlflow(best_model,classification_test_metric)
 
         preprocessor = load_object(file_path=self.data_transformation_artifact.transformed_object_file_path)
         model_dir_path = os.path.dirname(self.model_trainer_config.trained_model_file_path)
@@ -95,6 +114,8 @@ class ModelTrainer:
 
         network_model = NetworkModel(preprocessor=preprocessor,model=best_model)
         save_object(self.model_trainer_config.trained_model_file_path,obj=network_model)
+
+        save_object("final_models/model.pkl",best_model)
 
         # model trainer artifact
 
