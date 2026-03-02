@@ -199,16 +199,3 @@ Then builds and exposes:
 Public prediction endpoint
 
 ---
-
-## 🎯 Why This Strategy Matters
-
-This pipeline design:
-
-- Prevents tight coupling
-- Allows independent testing of stages
-- Supports scaling individual components
-- Makes retraining easier
-- Enables CI/CD integration
-- Supports future model registry systems
-
-This is how production ML systems are designed — as connected, traceable, modular stages.
