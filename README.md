@@ -1,43 +1,214 @@
-### Network Security Projects For Phising Data
+---
 
-Setup github secrets:
-AWS_ACCESS_KEY_ID=
+# 🔄 Pipeline Strategy & Data Flow
 
-AWS_SECRET_ACCESS_KEY=
+This project follows an artifact-driven pipeline strategy.  
+Each stage consumes structured inputs and produces structured outputs (artifacts).  
+No stage directly depends on internal logic of another stage.
 
-AWS_REGION = us-east-1
+This ensures modularity, testability, and scalability.
 
-AWS_ECR_LOGIN_URI = 788614365622.dkr.ecr.us-east-1.amazonaws.com/networkssecurity
-ECR_REPOSITORY_NAME = networkssecurity
+---
 
+## 📊 High-Level Flow
 
-Docker Setup In EC2 commands to be Executed
-#optinal
+MongoDB  
+   ↓  
+Data Ingestion  
+   ↓  
+Data Validation  
+   ↓  
+Data Transformation  
+   ↓  
+Model Training  
+   ↓  
+Model Evaluation  
+   ↓  
+Model Pusher  
+   ↓  
+Saved Model Artifact  
+   ↓  
+Flask Prediction API  
+   ↓  
+User Prediction Output  
 
-sudo apt-get update -y
+---
 
-sudo apt-get upgrade
+## 🧠 Detailed Stage Connections
 
-#required
+### 1️⃣ Data Ingestion
+Connects:
+- Source → MongoDB
+- Output → Raw data artifact (train/test split)
 
-curl -fsSL https://get.docker.com -o get-docker.sh
+Produces:
+- DataIngestionArtifact
 
-sudo sh get-docker.sh
+---
 
-sudo usermod -aG docker ubuntu
+### 2️⃣ Data Validation
+Consumes:
+- DataIngestionArtifact
 
-newgrp docker
+Validates:
+- Schema
+- Column consistency
+- Missing values
+- Data integrity
 
+Produces:
+- DataValidationArtifact
 
-1. Configure Setup.py
-2. Configure Logging.py
-3. Configure exception.py
-4. tst_mongo_db.py
-5. push_data.py
-6. update schema.yaml
-# follow stage by stage updaate data ingestion, data validation, model training, model evaluation steps 7->to->11 and update utils folder according to the requirement
-7. __init__.py in constant\training_pipeline
-8. config_entity.py 
-9. configure artifact_entity.py file
-10. create file with the satege in components folder
-11. main.py
+If validation fails, pipeline stops.
+
+---
+
+### 3️⃣ Data Transformation
+Consumes:
+- DataValidationArtifact
+
+Performs:
+- Feature engineering
+- Encoding
+- Scaling
+- Preprocessing pipeline creation
+
+Produces:
+- DataTransformationArtifact
+- Preprocessor object
+
+---
+
+### 4️⃣ Model Trainer
+Consumes:
+- Transformed dataset
+- Preprocessor object
+
+Performs:
+- Model training
+- Hyperparameter evaluation
+- Metric calculation
+
+Logs to:
+- MLflow (parameters, metrics, artifacts)
+
+Produces:
+- Trained model artifact
+
+---
+
+### 5️⃣ Model Evaluation
+Consumes:
+- Trained model
+- Validation dataset
+
+Compares:
+- Current model vs previous best (if exists)
+
+Decision:
+- If performance improves → approve
+- If not → reject
+
+Produces:
+- ModelEvaluationArtifact
+
+---
+
+### 6️⃣ Model Pusher
+Consumes:
+- Approved model
+
+Pushes:
+- Final serialized model to storage
+- Updates model registry (if configured)
+
+Produces:
+- Deployment-ready model file
+
+---
+
+## 🚀 Inference Flow (Separate from Training)
+
+User Request  
+   ↓  
+Flask API (app.py)  
+   ↓  
+Load Saved Model  
+   ↓  
+Apply Preprocessor  
+   ↓  
+Generate Prediction  
+   ↓  
+Return Result  
+
+Important:
+Training and inference pipelines are fully separated.  
+The inference layer never retrains the model.
+
+---
+
+## 📦 Artifact Strategy
+
+Each stage returns a structured Artifact object.
+
+Why?
+
+- Prevents hidden dependencies  
+- Makes debugging easier  
+- Enables pipeline re-runs from intermediate stages  
+- Makes cloud execution reproducible  
+
+Artifacts act as contracts between pipeline stages.
+
+---
+
+## 🧪 Where MLflow Connects
+
+MLflow hooks into:
+
+- Model Trainer stage
+- Model Evaluation stage
+
+It logs:
+- Hyperparameters
+- Evaluation metrics
+- Trained model file
+- Experiment metadata
+
+This enables:
+- Reproducibility
+- Version comparison
+- Auditability
+
+---
+
+## ☁️ Where Deployment Connects
+
+Deployment layer connects to:
+
+- Final saved model artifact
+- Docker container
+- Flask inference API
+
+AWS App Runner pulls:
+- GitHub repository
+- Dockerfile
+- Environment variables
+
+Then builds and exposes:
+Public prediction endpoint
+
+---
+
+## 🎯 Why This Strategy Matters
+
+This pipeline design:
+
+- Prevents tight coupling
+- Allows independent testing of stages
+- Supports scaling individual components
+- Makes retraining easier
+- Enables CI/CD integration
+- Supports future model registry systems
+
+This is how production ML systems are designed — as connected, traceable, modular stages.
