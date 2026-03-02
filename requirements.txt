@@ -16,4 +16,5 @@ ipykernel
 dill
 pyaml
 mypy
-#-e .
+
+-e .
